@@ -27,9 +27,10 @@ namespace AbsoluteDot
                 raw1Pos = report.Position;
                 dir2 = dir1;
                 dir1 = (raw1Pos - raw2Pos);
+                lastLastVelocity = lastVelocity;
                 lastVelocity = velocity;
                 velocity = (float)Math.Sqrt(Math.Pow(raw1Pos.X - raw2Pos.X, 2) + Math.Pow(raw1Pos.Y - raw2Pos.Y, 2));
-                scale = (float)Smootherstep(velocity / lastVelocity, 1f, 0f) * (float)(1 - Smootherstep(Math.Abs(Vector2.Dot(Vector2.Normalize(dir1), Vector2.Normalize(dir2))), 1f, 0));
+                scale = (float)Math.Sqrt(Smootherstep(velocity / (lastVelocity + lastLastVelocity), 0.5f, 0f)) * (float)(1 - Smootherstep(Math.Abs(Vector2.Dot(Vector2.Normalize(dir1), Vector2.Normalize(dir2))), 1f, 0));
                 if ((lastVelocity != 0) & (velocity != 0))
                 {
                 dir1 = Vector2.Lerp(dir1, Vector2.Normalize(dir2) * (float)Math.Sqrt(Math.Pow(dir1.X, 2) + Math.Pow(dir1.Y, 2)), scale * 0.5f);
@@ -54,7 +55,7 @@ namespace AbsoluteDot
             return start + scale * (end - start);
         }
 
-        public float velocity, lastVelocity, scale;
+        public float velocity, lastVelocity, lastLastVelocity, scale;
         public Vector2 raw3Pos, raw2Pos, raw1Pos, dir2, dir1, calc1Pos;
         private bool vec2IsFinite(Vector2 vec) => float.IsFinite(vec.X) & float.IsFinite(vec.Y);
 

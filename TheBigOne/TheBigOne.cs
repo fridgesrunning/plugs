@@ -459,7 +459,31 @@ namespace x
         )]
         public float decelWeight { get; set; }
 
-        [Property("extra number e"), DefaultPropertyValue(1d), ToolTip
+        [Property("Accel Weight Weight"), DefaultPropertyValue(1f), ToolTip
+        (
+            "Filter template:\n\n" +
+            "A property that appear as an input box.\n\n" +
+            "Has a numerical value."
+        )]
+        public float a2ccelWeight { get; set; }
+
+        [Property("Normal Weight"), DefaultPropertyValue(1f), ToolTip
+        (
+            "Filter template:\n\n" +
+            "A property that appear as an input box.\n\n" +
+            "Has a numerical value."
+        )]
+        public float n2ormalWeight { get; set; }
+
+        [Property("Decel Weight"), DefaultPropertyValue(1f), ToolTip
+        (
+            "Filter template:\n\n" +
+            "A property that appear as an input box.\n\n" +
+            "Has a numerical value."
+        )]
+        public float d2ecelWeight { get; set; }
+
+        [Property("extra number e"), DefaultPropertyValue(-1d), ToolTip
         (
             "Read the source code."
         )]
