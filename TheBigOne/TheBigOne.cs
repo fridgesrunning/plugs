@@ -698,7 +698,7 @@ namespace x
                 arf_indexFactor = (Math.Sqrt(Math.Pow(arf_angleIndexPoint.X / xDiv, 2) + Math.Pow(arf_angleIndexPoint.Y, 2)) / 1) / xnb;
 
                 if (xt1)
-                arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel / Math.Log(Math.Pow((float)arf_lastVel / xng + 1, xng) + 1), 0, 1 / (6 / amvDiv));
+                arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel / (Math.Log(Math.Pow((float)arf_lastVel / xng + 1, xng)) + 1), 0, 1 / (6 / amvDiv));
                 else
                 arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel, 0, 1 / (6 / amvDiv));   // Usually 1, reaches 0 and 2 under sufficient deceleration and acceleration respecctively
                 
