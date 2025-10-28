@@ -30,12 +30,14 @@ namespace AbsoluteDot
                 lastLastVelocity = lastVelocity;
                 lastVelocity = velocity;
                 velocity = (float)Math.Sqrt(Math.Pow(raw1Pos.X - raw2Pos.X, 2) + Math.Pow(raw1Pos.Y - raw2Pos.Y, 2));
-                scale = (float)Math.Sqrt(Smootherstep(velocity / (lastVelocity + lastLastVelocity), 0.5f, 0f)) * (float)(1 - Smootherstep(Math.Abs(Vector2.Dot(Vector2.Normalize(dir1), Vector2.Normalize(dir2))), 1f, 0));
+                scale = (float)Math.Sqrt(Smootherstep(velocity / (lastVelocity + lastLastVelocity), 0.33f, 0f)) * (float)(1 - Smootherstep(Math.Abs(Vector2.Dot(Vector2.Normalize(dir1), Vector2.Normalize(dir2))), 0.67f, 0));
                 if ((lastVelocity != 0) & (velocity != 0))
                 {
                 dir1 = Vector2.Lerp(dir1, Vector2.Normalize(dir2) * (float)Math.Sqrt(Math.Pow(dir1.X, 2) + Math.Pow(dir1.Y, 2)), scale * 0.5f);
                 calc1Pos = raw2Pos + dir1;
+                Console.WriteLine((calc1Pos - report.Position) / 100);
                 report.Position = calc1Pos;
+                
                 }
             }
             Emit?.Invoke(value);
