@@ -27,18 +27,17 @@ namespace AbsoluteDot
                 raw1Pos = report.Position;
                 dir2 = dir1;
                 dir1 = (raw1Pos - raw2Pos);
+                length2 = length1;
+                length1 = (float)Math.Sqrt(Math.Pow(dir1.X - dir1.X, 2) + Math.Pow(dir1.Y - dir1.Y, 2));
                 lastLastVelocity = lastVelocity;
                 lastVelocity = velocity;
                 velocity = (float)Math.Sqrt(Math.Pow(raw1Pos.X - raw2Pos.X, 2) + Math.Pow(raw1Pos.Y - raw2Pos.Y, 2));
+                if ((velocity != 0) & (lastVelocity != 0) & (lastLastVelocity != 0))
                 scale = (float)Math.Sqrt(Smootherstep(velocity / (lastVelocity + lastLastVelocity), 0.33f, 0f)) * (float)(1 - Smootherstep(Math.Abs(Vector2.Dot(Vector2.Normalize(dir1), Vector2.Normalize(dir2))), 0.67f, 0));
-                if ((lastVelocity != 0) & (velocity != 0))
-                {
-                dir1 = Vector2.Lerp(dir1, Vector2.Normalize(dir2) * (float)Math.Sqrt(Math.Pow(dir1.X, 2) + Math.Pow(dir1.Y, 2)), scale * 0.5f);
+                dir1 = Vector2.Lerp(dir1, Vector2.Normalize(dir2 + dir1) * (float)Math.Pow((0.5 * (Math.Pow(length2, 2) + Math.Pow(length1, 2)) * Math.Pow(length1, 2)), 0.25), scale);
                 calc1Pos = raw2Pos + dir1;
-                Console.WriteLine((calc1Pos - report.Position) / 100);
-                report.Position = calc1Pos;
+                report.Position = vec2IsFinite(calc1Pos) ? calc1Pos : report.Position;
                 
-                }
             }
             Emit?.Invoke(value);
         }
@@ -57,7 +56,7 @@ namespace AbsoluteDot
             return start + scale * (end - start);
         }
 
-        public float velocity, lastVelocity, lastLastVelocity, scale;
+        public float velocity, lastVelocity, lastLastVelocity, scale, length2, length1;
         public Vector2 raw3Pos, raw2Pos, raw1Pos, dir2, dir1, calc1Pos;
         private bool vec2IsFinite(Vector2 vec) => float.IsFinite(vec.X) & float.IsFinite(vec.Y);
 

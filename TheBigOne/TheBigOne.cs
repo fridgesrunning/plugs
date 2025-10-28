@@ -868,7 +868,7 @@ namespace x
         {
                 // rawThreshold should be negative (or not.) Sets lerpScale to a smootherstep from accel = rawThreshold to accel = something lower
             if (arf_accel / (6 / vDiv) < rawThreshold)
-            arf_lerpScale = arf_Smootherstep(accel / (6 / vDiv), rawThreshold, rawThreshold - (xn1 / (6 / vDiv)));
+            arf_lerpScale = arf_Smootherstep(arf_accel / (6 / vDiv), rawThreshold, rawThreshold - (xn1 / (6 / vDiv)));
 
             if ((aToggle == true) && (arf_indexFactor - arf_lastIndexFactor > (arf_holdVel * explerpconf)))
             arf_lerpScale = Math.Max(arf_lerpScale, arf_Smootherstep(arf_indexFactor - arf_lastIndexFactor, (arf_holdVel * explerpconf), (arf_holdVel * explerpconf) + (xn2 / (6 / rawv))));  // Don't exactly remember why this is the way it is but it looks like it works
