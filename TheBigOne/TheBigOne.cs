@@ -480,7 +480,7 @@ namespace x
         )]
         public float d2ecelWeight { get; set; }
 
-        [Property("extra number e"), DefaultPropertyValue(-1d), ToolTip
+        [Property("extra number e"), DefaultPropertyValue(-1f), ToolTip
         (
             "Read the source code."
         )]
@@ -502,7 +502,7 @@ namespace x
         }
         public double xnf;
 
-        [Property("extra number g"), DefaultPropertyValue(5d), ToolTip
+        [Property("extra number g"), DefaultPropertyValue(2.5d), ToolTip
         (
             "Read the source code."
         )]
@@ -643,6 +643,7 @@ namespace x
                     Console.WriteLine(arf_spinCheck);
                     Console.WriteLine(arf_sinceSnap);
                     Console.WriteLine(emaWeight);
+                    Console.WriteLine((Math.Log(Math.Pow((float)arf_lastVel / xng + 1, xng)) + 1));
                 }
     
                 Console.WriteLine("End of report ----------------------------------------------------");
