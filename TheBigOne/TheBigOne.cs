@@ -29,7 +29,7 @@ namespace x
         }
         private double xDiv;
 
-        [Property("Outer Radius (Important)"), DefaultPropertyValue(500.0d), Unit("px"), ToolTip
+        [Property("Outer Radius (Important)"), DefaultPropertyValue(250.0d), Unit("px"), ToolTip
         (
             "This scales with cursor velocity by default. \n\n" +
             "Outer radius defines the max distance the cursor can lag behind the actual reading.\n\n" +
@@ -47,7 +47,7 @@ namespace x
         }
         private double rOuter = 0;  // I have no idea why this is like this but it still works.
 
-        [Property("Inner Radius (Important)"), DefaultPropertyValue(500.0d), Unit("px"), ToolTip
+        [Property("Inner Radius (Important)"), DefaultPropertyValue(250.0d), Unit("px"), ToolTip
         (
             "This scales with cursor velocity by default. \n\n" +
             "Inner radius defines the max distance the tablet reading can deviate from the cursor without moving it.\n" +
@@ -64,7 +64,7 @@ namespace x
         }
         private double rInner = 0;  // I have no idea why this is like this but it still works.
 
-        [Property("Initial Smoothing Coefficient"), DefaultPropertyValue(0d), ToolTip
+        [Property("Initial Smoothing Coefficient"), DefaultPropertyValue(0.5d), ToolTip
         (
             "Smoothing coefficient determines how fast or slow the cursor will descend from the outer radius to the inner.\n\n" +
             "Possible value range is 0.0001..1, higher values mean more smoothing (slower descent to the inner radius).\n\n" +
@@ -258,8 +258,6 @@ namespace x
         {
             get { return amvDiv; }
             set { amvDiv = vDiv;
-
-                // amvDiv = vDiv unless specified to an override
             if (aToggle == true)
             amvDiv = System.Math.Clamp(value, 0.1f, 1000000.0f);  }
         }
@@ -291,7 +289,6 @@ namespace x
         }
         public bool rToggle;
 
-        
         [Property("extra number 1"), DefaultPropertyValue(1.0d), ToolTip
         (
             "Read the source code."
@@ -467,7 +464,7 @@ namespace x
         )]
         public float a2ccelWeight { get; set; }
 
-        [Property("Normal Weight"), DefaultPropertyValue(1f), ToolTip
+        [Property("Normal Weight Weight"), DefaultPropertyValue(1f), ToolTip
         (
             "Filter template:\n\n" +
             "A property that appear as an input box.\n\n" +
@@ -475,7 +472,7 @@ namespace x
         )]
         public float n2ormalWeight { get; set; }
 
-        [Property("Decel Weight"), DefaultPropertyValue(1f), ToolTip
+        [Property("Decel Weight Weight"), DefaultPropertyValue(1f), ToolTip
         (
             "Filter template:\n\n" +
             "A property that appear as an input box.\n\n" +
@@ -505,7 +502,7 @@ namespace x
         }
         public double xnf;
 
-        [Property("extra number g"), DefaultPropertyValue(2d), ToolTip
+        [Property("extra number g"), DefaultPropertyValue(5d), ToolTip
         (
             "Read the source code."
         )]
@@ -530,11 +527,7 @@ namespace x
         protected override void ConsumeState()  // Report
         {
             if (State is ITabletReport report)
-            {
-                var consumeDelta = (float)reportStopwatch.Restart().TotalMilliseconds;
-                if (consumeDelta < 150)
-                    reportMsAvg += ((consumeDelta - reportMsAvg) * 0.1f);
-                    
+            {       
                 lastPosition = currPosition;
                 currPosition = vec2IsFinite(currPosition) ? currPosition : report.Position;
                 currPosition = Filter(State, report.Position);
@@ -543,33 +536,38 @@ namespace x
                 velocity = (float)Math.Sqrt(Math.Pow(currPosition.X - lastPosition.X, 2) + Math.Pow(currPosition.Y - lastPosition.Y, 2));
                 accel = velocity - lastVelocity;
 
-                //if (!(velocity == 0))
-               // pow = (float)Math.Clamp(1 + (arf_accel / arf_holdVel), 0, 1);
-               // else pow = 1;
+                if (accel < 0)
+                emaWeightWeight = ClampedLerp(d2ecelWeight, n2ormalWeight, Smootherstep((float)arf_accel / (float)arf_holdVel, xne, 0));
+                else emaWeightWeight = ClampedLerp(n2ormalWeight, a2ccelWeight, Smootherstep((float)arf_accel / (float)Math.Log(Math.Pow((float)arf_holdVel / xnf + 1, xnf) + 1), 0, 1));
 
                 if (accel < 0)
-                emaWeight = ClampedLerp(decelWeight, normalWeight, Smootherstep((float)arf_accel / (float)arf_holdVel, xne, 0));
-                else emaWeight = ClampedLerp(normalWeight, accelWeight, Smootherstep((float)arf_accel / (float)Math.Log(Math.Pow((float)arf_holdVel / xnf + 1, xnf) + 1), 0, 1));
+                emaWeight += emaWeightWeight * (ClampedLerp(decelWeight, normalWeight, Smootherstep((float)arf_accel / (float)arf_holdVel, xne, 0)) - emaWeight);
+                else emaWeight += emaWeightWeight * (ClampedLerp(normalWeight, accelWeight, Smootherstep((float)arf_accel / (float)Math.Log(Math.Pow((float)arf_holdVel / xnf + 1, xnf) + 1), 0, 1)) - emaWeight);
+
+                if (!float.IsFinite(emaWeight))
+                {
+                    emaWeight = 1;
+                    emaWeightWeight = 1;
+                }
 
                 calc1Pos = vec2IsFinite(calc1Pos) ? calc1Pos : currPosition;
 
                 UpdateState();
 
-                //Console.WriteLine(currPosition);
             }
             else OnEmit();
         }
 
         protected override void UpdateState()   // Interpolation
         {
-            float alpha = (float)(reportStopwatch.Elapsed.TotalSeconds * Frequency / reportMsAvg);
+            float alpha = (float)(reportStopwatch.Elapsed.TotalSeconds * Frequency / xnb);
 
             if (State is ITabletReport report && PenIsInRange())
             {
                 alpha = (float)Math.Clamp(alpha, 0, 1);
                 calc2Pos = Vector2.Lerp(lastPosition, currPosition, alpha);
                 calc1Pos += emaWeight * (calc2Pos - calc1Pos);
-                calc1Pos = vec2IsFinite(calc1Pos) ? calc1Pos : calc2Pos;
+                calc1Pos = vec2IsFinite(calc1Pos) ? Vector2.Lerp(calc1Pos, calc2Pos, (float)arf_lerpScale * alpha) : calc2Pos;
                 if (velocity != 0)
                 report.Position = calc1Pos;
                 else {
@@ -601,7 +599,6 @@ namespace x
         Vector2 currPosition, lastPosition;
         float velocity, lastVelocity, accel;
         private HPETDeltaStopwatch reportStopwatch = new HPETDeltaStopwatch();
-        private float reportMsAvg = (1 / 300);
 
         public float arf_SampleRadialCurve(IDeviceReport value, float dist) => (float)arf_deltaFn(value, dist, arf_xOffset(value), arf_scaleComp(value));
         public double arf_ResetMs = 1;
@@ -609,41 +606,32 @@ namespace x
 
         public Vector2 Filter(IDeviceReport value, Vector2 target)
         {
-                // Timing system from BezierInterpolator to standardize velocity
             double holdTime = stopwatch.Restart().TotalMilliseconds;
-                var consumeDelta = holdTime;
-                if (consumeDelta < 150)
-                    arf_reportMsAvg += ((consumeDelta - arf_reportMsAvg) * 0.1f);
+            var consumeDelta = holdTime;
 
-                // Produce numbers (velocity, accel, etc)
             UpdateReports(value, target);
 
-
-                // Self explanatory
-            if (aToggle == true)
+            if (aToggle)
             {
                 AdvancedBehavior();
-                if (rToggle == true)
+                if (rToggle)
                 {
-                    GroundedRadius(value, target); // Grounded radius behavior
+                    GroundedRadius(value, target);
                 }
             }
-            arf_holdCursor = arf_cursor;    // Don't remember why this is a thing
+            arf_holdCursor = arf_cursor;
 
             Vector2 direction = target - arf_cursor;
-            float distToMove = arf_SampleRadialCurve(value, direction.Length());    // Where all the magic happens
+            float distToMove = arf_SampleRadialCurve(value, direction.Length());
 
             LerpChecks();
-
                         
             direction = Vector2.Normalize(direction);
             arf_cursor = arf_cursor + Vector2.Multiply(direction, distToMove);
-            arf_cursor = arf_LerpedCursor((float)arf_lerpScale, arf_cursor, target);    // Jump to raw report if certain conditions are fulfilled
+            arf_cursor = arf_LerpedCursor((float)arf_lerpScale, arf_cursor, target);
 
-                // Catch NaNs and pen redetection
             if (!(float.IsFinite(arf_cursor.X) & float.IsFinite(arf_cursor.Y) & holdTime < 50))
                 arf_cursor = target;
-
 
             if (cLog == true)
             {
@@ -672,28 +660,25 @@ namespace x
                     Console.WriteLine((arf_indexFactor - arf_lastIndexFactor) / arf_holdVel);
                     Console.WriteLine(arf_spinCheck);
                     Console.WriteLine(arf_sinceSnap);
+                    Console.WriteLine(emaWeight);
                 }
     
                 Console.WriteLine("End of report ----------------------------------------------------");
             }
 
-            arf_lerpScale = 0;  // Reset value
-            arf_lastCursor = arf_holdCursor;    // Don't remember why this is a thing
+            arf_lerpScale = 0; 
+            arf_lastCursor = arf_holdCursor;
 
-                // Reset possibly changed values
             if (aToggle == true)
             AdvancedReset();
 
             return arf_cursor;
         }
 
-
-            // Stats from reports
         void UpdateReports(IDeviceReport value, Vector2 target)
         {
             if (value is ITabletReport report)
             {
-
                 arf_last3Report = arf_lastLastReport;
                 arf_lastLastReport = arf_lastReport;
                 arf_lastReport = arf_currReport;
@@ -710,13 +695,11 @@ namespace x
                 arf_lastAccel = arf_accel;
                 arf_accel = arf_vel - ((Math.Sqrt(Math.Pow(arf_seconddiff.X / xDiv, 2) + Math.Pow(arf_seconddiff.Y, 2)) / 1) / xnb);
 
-                    // Has less use than it probably should.
                 arf_lastJerk = arf_jerk;
                 arf_jerk = arf_accel - arf_lastAccel;
 
                 arf_snap = arf_jerk - arf_lastJerk;
 
-                    // Angle index doesn't even use angles directly.
                 arf_angleIndexPoint = 2 * arf_diff - arf_seconddiff - arf_thirddiff;
                 arf_lastIndexFactor = arf_indexFactor;
                 arf_indexFactor = (Math.Sqrt(Math.Pow(arf_angleIndexPoint.X / xDiv, 2) + Math.Pow(arf_angleIndexPoint.Y, 2)) / 1) / xnb;
@@ -724,22 +707,11 @@ namespace x
                 if (xt1)
                 arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel / (Math.Log(Math.Pow((float)arf_lastVel / xng + 1, xng)) + 1), 0, 1 / (6 / amvDiv));
                 else
-                arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel, 0, 1 / (6 / amvDiv));   // Usually 1, reaches 0 and 2 under sufficient deceleration and acceleration respecctively
+                arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel, 0, 1 / (6 / amvDiv));
                 
-            /// You can uncomment for advanced diagnostics.
-            //    Console.WriteLine(vel);
-            //    Console.WriteLine(accel);
-            //    Console.WriteLine(jerk);
-            //    Console.WriteLine(snap);
-            //    Console.WriteLine("-----------");
-            //    Console.WriteLine(angleIndex);
-            //    Console.WriteLine(angleIndex - lastIndex);
-            //    Console.WriteLine(rOuterAdjusted(value, cursor, rOuter, rInner));
-            //    Console.WriteLine("-------------------------------------------");
             }
         }
 
-            // 2.0 behavior.
         void AdvancedBehavior()
         {
 
@@ -747,27 +719,17 @@ namespace x
             arf_doubt = 0;
             if ((Math.Abs(arf_indexFactor) > arf_vel * 2 | (arf_accel / arf_vel > xnc)) && (arf_vel / rawv > xnd))
             {
-            //    Console.WriteLine("snapping?");
-            //    Console.WriteLine(accel / vel);
                 arf_sinceSnap = 0;
             }
 
             arf_last9Vel = arf_last8Vel;
-
             arf_last8Vel = arf_last7Vel;
-
             arf_last7Vel = arf_last6Vel;
-
             arf_last6Vel = arf_last5Vel;
-
             arf_last5Vel = arf_last4Vel;
-
             arf_last4Vel = arf_last3Vel;
-
             arf_last3Vel = arf_last2Vel;
-
             arf_last2Vel = arf_lastVel;
-
             arf_spinCheck = Math.Clamp(Math.Pow(arf_vel / (rawv * scConf), 5), 0, 1) +
                         Math.Clamp(Math.Pow(arf_lastVel / (rawv * scConf), 5), 0, 1) +
                         Math.Clamp(Math.Pow(arf_last2Vel / (rawv * scConf), 5), 0, 1) +
@@ -779,18 +741,7 @@ namespace x
                         Math.Clamp(Math.Pow(arf_last8Vel / (rawv * scConf), 5), 0, 1) +
                         Math.Clamp(Math.Pow(arf_last9Vel / (rawv * scConf), 5), 0, 1);
 
-        //    if (indexFactor > Math.Max(1 / (6 / rawv), angidx * vel))
-        //    {
-        //        if (!((vel > rawv & lastVel > rawv) || 
-        //        (accel > (1 / (6 / rawv)) & jerk > (1 / (6 / rawv)) & snap > (1 / (6 / rawv)))))
-        //        {
-        //        Console.WriteLine("OH MY GOD BRUH");
-        //        Console.WriteLine(vel);
-        //        }
-        //    }
-
-            if ( // (vel > rawv & lastVel > rawv) || 
-                (arf_accel > (xn3 / (6 / rawv)) & arf_jerk > (xn4 / (6 / rawv)) & arf_snap > (xn5 / (6 / rawv))) ||
+            if ((arf_accel > (xn3 / (6 / rawv)) & arf_jerk > (xn4 / (6 / rawv)) & arf_snap > (xn5 / (6 / rawv))) ||
                 (arf_indexFactor > Math.Max(xn6 / (6 / rawv), angidx * arf_vel)))
             {
                 arf_vel *= 10 * vDiv;
@@ -808,25 +759,20 @@ namespace x
 
             if ((arf_spinCheck > 8) && arf_sinceSnap > 30)
             {
-            //    Console.WriteLine("spinning?");
                 arf_vel = 0;
                 arf_accel = -10 * rawThreshold;
             }
 
-
         }
 
-            // Grounded radius behavior
         void GroundedRadius(IDeviceReport value, Vector2 target)
         {
-                // Not radius max
             if (arf_holdVel2 * Math.Pow(arf_accelMult, accPower) < vDiv)
             {
                 arf_radiusGroundCount = 0;
                 arf_distanceGround = 0;
-              //  Console.WriteLine(holdVel2);
             }
-                else arf_radiusGroundCount += 1;
+            else arf_radiusGroundCount += 1;
 
             if (arf_accelMult < 1.99)
             {
@@ -834,11 +780,9 @@ namespace x
             }
             else arf_sinceAccelTop += 1;
 
-                // Radius max
             if (arf_holdVel2 * Math.Pow(arf_accelMult, accPower) >= vDiv)
             {
                 if ((arf_radiusGroundCount <= 1) || 
-                
                 (arf_vel > rawv & arf_lastVel > rawv) && 
                 ((arf_accel > (xn3 / (6 / rawv)) & arf_jerk > (xn4 / (6 / rawv)) & arf_snap > (xn5 / (6 / rawv))) ||
                 (arf_indexFactor > Math.Max(xn6 / (6 / rawv), angidx * arf_vel)) ||
@@ -846,16 +790,11 @@ namespace x
                 {
                     arf_groundedPoint = arf_cursor;
                 }
-                    arf_groundedDiff = target - arf_groundedPoint;
-                    arf_distanceGround = Math.Sqrt(Math.Pow(arf_groundedDiff.X, 2) + Math.Pow(arf_groundedDiff.Y, 2));
-                    
+
+                arf_groundedDiff = target - arf_groundedPoint;
+                arf_distanceGround = Math.Sqrt(Math.Pow(arf_groundedDiff.X, 2) + Math.Pow(arf_groundedDiff.Y, 2));
             }
-               //   Console.WriteLine(radiusGroundCount);
-               //   Console.WriteLine(distanceGround);
-                  //  Console.WriteLine(holdVel2 * Math.Pow(accelMult, accPower));
 
-
-                // Cursor is outside max outer radius while radius is usually maxed? Act as if radius doesn't exist for smooth movement. Also exopts bs
             if (arf_distanceGround > rOuter)
             {
                 arf_vel = 0;
@@ -866,12 +805,12 @@ namespace x
 
         void LerpChecks()
         {
-                // rawThreshold should be negative (or not.) Sets lerpScale to a smootherstep from accel = rawThreshold to accel = something lower
+            
             if (arf_accel / (6 / vDiv) < rawThreshold)
             arf_lerpScale = arf_Smootherstep(arf_accel / (6 / vDiv), rawThreshold, rawThreshold - (xn1 / (6 / vDiv)));
 
             if ((aToggle == true) && (arf_indexFactor - arf_lastIndexFactor > (arf_holdVel * explerpconf)))
-            arf_lerpScale = Math.Max(arf_lerpScale, arf_Smootherstep(arf_indexFactor - arf_lastIndexFactor, (arf_holdVel * explerpconf), (arf_holdVel * explerpconf) + (xn2 / (6 / rawv))));  // Don't exactly remember why this is the way it is but it looks like it works
+            arf_lerpScale = Math.Max(arf_lerpScale, arf_Smootherstep(arf_indexFactor - arf_lastIndexFactor, (arf_holdVel * explerpconf), (arf_holdVel * explerpconf) + (xn2 / (6 / rawv))));
 
             if (arf_doubt == 0)
             {
@@ -888,14 +827,9 @@ namespace x
         void AdvancedReset()
         {
             arf_vel =  ((Math.Sqrt(Math.Pow(arf_diff.X / xDiv, 2) + Math.Pow(arf_diff.Y, 2)) / 1) / xnb);
-            arf_accel = arf_vel - ((Math.Sqrt(Math.Pow(arf_seconddiff.X / xDiv, 2) + Math.Pow(arf_seconddiff.Y, 2)) / 1) / xnb);   // This serves no use but might later on. (Now does)
+            arf_accel = arf_vel - ((Math.Sqrt(Math.Pow(arf_seconddiff.X / xDiv, 2) + Math.Pow(arf_seconddiff.Y, 2)) / 1) / xnb);
             arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel, 0, 1 / (6 / amvDiv));
         }
-
-
-
-
-        /// Math functions
         
         double arf_kneeFunc(double x) => x switch
         {
@@ -1129,12 +1063,12 @@ namespace x
 
         public double arf_sinceAccelTop;
 
-        private double arf_reportMsAvg = 5;
-
         public float emaWeight;
 
         public Vector2 calc1Pos;
 
         public Vector2 calc2Pos;
+
+        public float emaWeightWeight;
     }
 }
