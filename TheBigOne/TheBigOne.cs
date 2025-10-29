@@ -528,6 +528,8 @@ namespace x
         {
             if (State is ITabletReport report)
             {       
+                holdTime = reportStopwatch.Restart().TotalMilliseconds;
+
                 lastPosition = currPosition;
                 currPosition = vec2IsFinite(currPosition) ? currPosition : report.Position;
                 currPosition = Filter(State, report.Position);
@@ -537,12 +539,12 @@ namespace x
                 accel = velocity - lastVelocity;
 
                 if (accel < 0)
-                emaWeightWeight = ClampedLerp(d2ecelWeight, n2ormalWeight, Smootherstep((float)arf_accel / (float)arf_holdVel, xne, 0));
-                else emaWeightWeight = ClampedLerp(n2ormalWeight, a2ccelWeight, Smootherstep((float)arf_accel / (float)Math.Log(Math.Pow((float)arf_holdVel / xnf + 1, xnf) + 1), 0, 1));
+                emaWeightWeight = ClampedLerp(d2ecelWeight, n2ormalWeight, Smoothstep((float)arf_accel / (float)arf_holdVel, xne, 0));
+                else emaWeightWeight = ClampedLerp(n2ormalWeight, a2ccelWeight, Smoothstep((float)arf_accel / (float)Math.Log(Math.Pow((float)arf_holdVel / xnf + 1, xnf) + 1), 0, 1));
 
                 if (accel < 0)
-                emaWeight += emaWeightWeight * (ClampedLerp(decelWeight, normalWeight, Smootherstep((float)arf_accel / (float)arf_holdVel, xne, 0)) - emaWeight);
-                else emaWeight += emaWeightWeight * (ClampedLerp(normalWeight, accelWeight, Smootherstep((float)arf_accel / (float)Math.Log(Math.Pow((float)arf_holdVel / xnf + 1, xnf) + 1), 0, 1)) - emaWeight);
+                emaWeight += emaWeightWeight * (ClampedLerp(decelWeight, normalWeight, Smoothstep((float)arf_accel / (float)arf_holdVel, xne, 0)) - emaWeight);
+                else emaWeight += emaWeightWeight * (ClampedLerp(normalWeight, accelWeight, Smoothstep((float)arf_accel / (float)Math.Log(Math.Pow((float)arf_holdVel / xnf + 1, xnf) + 1), 0, 1)) - emaWeight);
 
                 if (!float.IsFinite(emaWeight))
                 {
@@ -580,35 +582,15 @@ namespace x
             }
         }
 
-        [TabletReference]
-        public TabletReference TabletReference
-        {
-            set
-            {
-                var digitizer = value.Properties.Specifications.Digitizer;
-                mmScale = new Vector2
-                {
-                    X = digitizer.Width / digitizer.MaxX,
-                    Y = digitizer.Height / digitizer.MaxY
-                };
-            }
-        }
-        private Vector2 mmScale = Vector2.One;
-
         private bool vec2IsFinite(Vector2 vec) => float.IsFinite(vec.X) & float.IsFinite(vec.Y);
         Vector2 currPosition, lastPosition;
         float velocity, lastVelocity, accel;
         private HPETDeltaStopwatch reportStopwatch = new HPETDeltaStopwatch();
 
         public float arf_SampleRadialCurve(IDeviceReport value, float dist) => (float)arf_deltaFn(value, dist, arf_xOffset(value), arf_scaleComp(value));
-        public double arf_ResetMs = 1;
-        public double arf_GridScale = 1;
 
         public Vector2 Filter(IDeviceReport value, Vector2 target)
         {
-            double holdTime = stopwatch.Restart().TotalMilliseconds;
-            var consumeDelta = holdTime;
-
             UpdateReports(value, target);
 
             if (aToggle)
@@ -705,9 +687,9 @@ namespace x
                 arf_indexFactor = (Math.Sqrt(Math.Pow(arf_angleIndexPoint.X / xDiv, 2) + Math.Pow(arf_angleIndexPoint.Y, 2)) / 1) / xnb;
 
                 if (xt1)
-                arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel / (Math.Log(Math.Pow((float)arf_lastVel / xng + 1, xng)) + 1), 0, 1 / (6 / amvDiv));
+                arf_accelMult = arf_Smootherstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smootherstep(arf_accel / (Math.Log(Math.Pow((float)arf_lastVel / xng + 1, xng)) + 1), 0, 1 / (6 / amvDiv));
                 else
-                arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel, 0, 1 / (6 / amvDiv));
+                arf_accelMult = arf_Smootherstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smootherstep(arf_accel, 0, 1 / (6 / amvDiv));
                 
             }
         }
@@ -828,8 +810,11 @@ namespace x
         {
             arf_vel =  ((Math.Sqrt(Math.Pow(arf_diff.X / xDiv, 2) + Math.Pow(arf_diff.Y, 2)) / 1) / xnb);
             arf_accel = arf_vel - ((Math.Sqrt(Math.Pow(arf_seconddiff.X / xDiv, 2) + Math.Pow(arf_seconddiff.Y, 2)) / 1) / xnb);
-            arf_accelMult = arf_Smoothstep(arf_accel, -1 / (6 / amvDiv), 0) + arf_Smoothstep(arf_accel, 0, 1 / (6 / amvDiv));
+            arf_accelMult = arf_Smootherstep(arf_accel, -1 / (6 / amvDiv), 0) + (xt1 ? arf_Smootherstep(arf_accel, 0, 1 / (6 / amvDiv)) : 
+                                                                                     arf_Smootherstep(arf_accel / (Math.Log(Math.Pow((float)arf_lastVel / xng + 1, xng)) + 1), 0, 1 / (6 / amvDiv)));
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
         
         double arf_kneeFunc(double x) => x switch
         {
@@ -850,6 +835,13 @@ namespace x
             x = Math.Clamp((x - start) / (end - start), 0.0, 1.0);
 
             return x * x * x * (x * (6.0 * x - 15.0) + 10.0);
+        }
+
+        public static float Smoothstep(float x, float start, float end) // Copy pasted out of osu! pp. Thanks StanR 
+        {
+            x = (float)Math.Clamp((x - start) / (end - start), 0.0, 1.0);
+
+            return (float)(x * x * (3.0 - 2.0 * x));
         }
 
         public static float Smootherstep(float x, float start, float end) // Float version
@@ -968,7 +960,6 @@ namespace x
             }
         }
 
-
         public static float ClampedLerp(float start, float end, float scale)
         {
             scale = (float)Math.Clamp(scale, 0, 1);
@@ -979,7 +970,6 @@ namespace x
         Vector2 arf_cursor;
         Vector2 arf_holdCursor;
         Vector2 arf_lastCursor;
-         HPETDeltaStopwatch stopwatch = new HPETDeltaStopwatch(true);
 
         double arf_xOffset(IDeviceReport value) => arf_getXOffset(value);
         
@@ -1070,5 +1060,7 @@ namespace x
         public Vector2 calc2Pos;
 
         public float emaWeightWeight;
+
+        public double holdTime;
     }
 }
