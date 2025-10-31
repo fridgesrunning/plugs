@@ -538,11 +538,11 @@ namespace x
                 velocity = (float)Math.Sqrt(Math.Pow(currPosition.X - lastPosition.X, 2) + Math.Pow(currPosition.Y - lastPosition.Y, 2));
                 accel = velocity - lastVelocity;
 
-                if (accel < 0)
+                if (arf_accel < 0)
                 emaWeightWeight = ClampedLerp(d2ecelWeight, n2ormalWeight, Smoothstep((float)arf_accel / (float)arf_holdVel, xne, 0));
                 else emaWeightWeight = ClampedLerp(n2ormalWeight, a2ccelWeight, Smoothstep((float)arf_accel / (float)Math.Log(Math.Pow((float)arf_holdVel / xnf + 1, xnf) + 1), 0, 1));
 
-                if (accel < 0)
+                if (arf_accel < 0)
                 emaWeight += emaWeightWeight * (ClampedLerp(decelWeight, normalWeight, Smoothstep((float)arf_accel / (float)arf_holdVel, xne, 0)) - emaWeight);
                 else emaWeight += emaWeightWeight * (ClampedLerp(normalWeight, accelWeight, Smoothstep((float)arf_accel / (float)Math.Log(Math.Pow((float)arf_holdVel / xnf + 1, xnf) + 1), 0, 1)) - emaWeight);
 
