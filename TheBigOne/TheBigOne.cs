@@ -118,7 +118,7 @@ namespace x
         }
         private double vDiv;
 
-        [Property("Minimum Radius Multiplier"), DefaultPropertyValue(0.0d), ToolTip
+        [Property("Minimum Radius Multiplier"), DefaultPropertyValue(0.01d), ToolTip
         (
             "Set this to a low number that multiplies your radii to like 1px."
         )]
