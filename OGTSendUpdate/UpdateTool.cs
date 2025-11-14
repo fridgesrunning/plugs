@@ -84,6 +84,8 @@ namespace OGTUpdateTool
             {
                 if (Stress)
                     Console.WriteLine("t");
+                    
+                    report.Position = raw1Pos;
 
                 State = report;
                 OnEmit();

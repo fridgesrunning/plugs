@@ -32,6 +32,7 @@ namespace OGTRenderTool
         {
             if (State is ITabletReport report)
             {
+                raw1Pos = report.Position;
                 if (Wire)
                     UpdateState();
             }
@@ -42,11 +43,15 @@ namespace OGTRenderTool
         {    
             if (State is ITabletReport report && PenIsInRange())
             {
-                Console.WriteLine("d");
+                report.Position = raw1Pos;
                 State = report;
+                Console.WriteLine("d");
                 OnEmit();
             }
             else Console.WriteLine("i");
         }
+
+        Vector2 raw1Pos;
+
     }
 }
