@@ -39,13 +39,13 @@ namespace OGTUpdateTool
         (
             "Set this to true and frequency to 0 in most cases. Otherwise, prepare for a stress test if stress test is enabled."
         )]
-        public bool Wire { get; set; };
+        public bool Wire { get; set; }
 
         [BooleanProperty("Stress Test (Hover Over This)", ""), DefaultPropertyValue(false), ToolTip
         (
             "Keep this at false unless you are testing if your CPU will be able to handle graphing a theoretical (frequency)Hz tablet."
         )]
-        public bool Stress { get; set; };
+        public bool Stress { get; set; }
 
         protected override void ConsumeState()
         {

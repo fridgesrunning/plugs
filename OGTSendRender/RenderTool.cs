@@ -26,13 +26,13 @@ namespace OGTRenderTool
             "Set this to true and frequency to 0 to only render on tablet update.\n" +
             "Should probably set frequency to display refresh rate though, making setting this your decision."
         )]
-        public bool Wire { get; set; };
+        public bool Wire { get; set; }
 
         protected override void ConsumeState()
         {
             if (State is ITabletReport report)
             {
-                if (wire)
+                if (Wire)
                     UpdateState();
             }
             else OnEmit();
