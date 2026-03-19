@@ -8,7 +8,7 @@ using OpenTabletDriver.Plugin.Timing;
 
 namespace PostTransformCenterMode
 {
-    [PluginName("Post Transform Center Mode (Standalone/Lift)")]
+    [PluginName("Post Transform Center Mode (Standalone)")]
     public class Standalone : OutputModeAware
     {
         public Standalone() : base()
