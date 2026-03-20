@@ -14,11 +14,10 @@ public abstract class OutputModeAware : IPositionedPipelineElement<IDeviceReport
         return outputMode;
     }
 
-    public Vector2 getDisplayArea() {
+    public Vector2 GetDisplayCenter() {
         if (outputMode.Type == OutputType.absolute && absoluteOutputMode != null) {
-            return new Vector2(absoluteOutputMode.Output.Width, absoluteOutputMode.Output.Height);
+            return absoluteOutputMode.Output.Position;
         }
-
         TryResolveOutputMode();
         return default;
     }

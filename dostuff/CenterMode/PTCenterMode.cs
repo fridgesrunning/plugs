@@ -31,6 +31,17 @@ namespace PostTransformCenterMode
         }
         public float _resetTime;
 
+        [Property("Deadzone Time"), DefaultPropertyValue(500f), ToolTip
+        (
+            "Cursor won't move for this many milliseconds after resetting."
+        )]
+        public float deadzoneTime
+        {
+            set => _deadzoneTime = Math.Max(value, 0f);
+            get => _deadzoneTime;
+        }
+        public float _deadzoneTime;
+
         [BooleanProperty("Initialize At Center", ""), DefaultPropertyValue(true), ToolTip
         (
             "If disabled, output obeys settings at the first report.\n" +
@@ -54,10 +65,13 @@ namespace PostTransformCenterMode
 
         void HandleOutputMode(Vector2 input) {
             float reportTime = (float)reportStopwatch.Restart().TotalMilliseconds;
+
+            dTimeRemaining = Math.Max(dTimeRemaining - reportTime, 0f);
+            
             OutputMode outputMode = GetOutputMode();
             if (outputMode.Type == OutputType.absolute) {
                 if (!initFlag) {
-                    screenCenter = getDisplayArea() / 2;
+                    screenCenter = GetDisplayCenter();
                 }
                 if (resetTime == 0f) {
                     passthroughFlag = true;
@@ -66,13 +80,28 @@ namespace PostTransformCenterMode
                     InsertAtFirst(dir, input - fRelPoint);
                     fRelPoint = input;
                     if (initFlag) {
-                        if (reportTime < resetTime) Continue();
-                        else Reset(); 
+                        if (reportTime < resetTime) {
+                                if (dTimeRemaining == 0f) {
+                                    Continue();
+                                }
+                                else {
+                                    Reset();
+                                }
+                            }
+                        else {
+                            Reset(); 
+                            dTimeRemaining = deadzoneTime;
+                        }
                     }
                     else {
                         initFlag = true;
-                        if (!initCenter) Continue();
-                        else Reset();
+                        if (!initCenter) {
+                            Continue();
+                        }
+                        else {
+                            Reset();
+                            dTimeRemaining = deadzoneTime;
+                        }
                     }
                 }
             }
@@ -108,6 +137,8 @@ namespace PostTransformCenterMode
         bool initFlag, passthroughFlag;
 
         Vector2 screenCenter, fRelPoint;
+
+        float dTimeRemaining;
         
         private HPETDeltaStopwatch reportStopwatch = new HPETDeltaStopwatch();
         private bool vec2IsFinite(Vector2 vec) => float.IsFinite(vec.X) & float.IsFinite(vec.Y);
