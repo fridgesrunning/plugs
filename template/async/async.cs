@@ -35,9 +35,9 @@ namespace async
         {
             if ((State is ITabletReport report && PenIsInRange())) {
                 report.Position = position;
-                Console.WriteLine("UpdateState pressure before OnEmit(): " + report.Pressure);
+                Console.WriteLine("UpdateState pressure before OnEmit: " + report.Pressure);
                 OnEmit();
-                Console.WriteLine("UpdateState pressure after OnEmit(): " + report.Pressure);
+                Console.WriteLine("UpdateState pressure after OnEmit: " + report.Pressure);
                 Console.WriteLine("--");
             }
         }
