@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>Temporal_Resampler_1._1._0</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+    <ItemGroup>
     <PackageReference Include="MathNet.Filtering.Kalman" Version="0.7.0" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-    <PackageReference Include="OpenTabletDriver.Plugin" Version="0.6.3" />
+    <PackageReference Include="OpenTabletDriver.Plugin" Version="0.6.7" />
+    <PackageReference Include="OpenTabletDriver" Version="0.6.7" />
   </ItemGroup>
-
+  
 </Project>

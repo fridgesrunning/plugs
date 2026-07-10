@@ -42,18 +42,24 @@ namespace printtime
         {    
             if (value is ITabletReport report)
             {
-                float reportTime = (float)reportStopwatch.Restart().TotalMilliseconds;
-                if (!init) {
-                Initialize();
-                init = true;
-                return;
+                double dt = (double)reportStopwatch.Restart().TotalMilliseconds;
+                ct++;
+                if (ct > 50) {
+                total += dt;
+                tick += 1.0;
+                Console.WriteLine(total / tick);
                 }
-                if (reportTime < 25f)   {
-                    reportMsAvg += ((reportTime - reportMsAvg) * 0.1f);
-                    error += (reportTime - testValue);
-                    lol += error;
-                }
-                Console.WriteLine(lol * mult);
+              //  if (!init) {
+              //  Initialize();
+             //   init = true;
+              ///  return;
+             //   }
+             //   if (reportTime < 25f)   {
+             //       reportMsAvg += ((reportTime - reportMsAvg) * 0.1f);
+             //       error += (reportTime - testValue);
+             //       lol += error;
+             //   }
+            //    Console.WriteLine(lol * mult);
             }
             Emit?.Invoke(value);
         }
@@ -61,6 +67,10 @@ namespace printtime
         void Initialize() {
             reportMsAvg = testValue;
         }
+        double total;
+        double tick;
+
+        int ct;
 
         float reportMsAvg;
         bool init = false;
