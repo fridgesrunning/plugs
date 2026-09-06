@@ -47,7 +47,8 @@ namespace printtime
                 if (ct > 50) {
                 total += dt;
                 tick += 1.0;
-                Console.WriteLine(total / tick);
+                if (dt > 4.9) 
+                    Console.WriteLine(dt);
                 }
               //  if (!init) {
               //  Initialize();

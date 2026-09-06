@@ -29,16 +29,12 @@ namespace sync
 
         public void Consume(IDeviceReport value)
         {
+
             if (value is ITabletReport report)
             {
-                Console.WriteLine("pressure before Emit.Invoke: " + report.Pressure);
-            }
-            Emit?.Invoke(value);
-            if (value is ITabletReport report2)
-            {
-                Console.WriteLine("pressure after Emit.Invoke: " + report2.Pressure);
                 Console.WriteLine("----");
             }
+            Emit?.Invoke(value);
         }
     }
 }
